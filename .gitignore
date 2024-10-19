@@ -10,6 +10,10 @@ EchoLeap/[Bb]uilds/
 EchoLeap/[Ll]ogs/
 EchoLeap/[Uu]ser[Ss]ettings/
 
+EchoLeap/Assets/Scripts/Temp/*
+!/EchoLeap/Assets/Scripts/Temp/
+!/EchoLeap/Assets/Scripts/Temp/**/
+
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
 EchoLeap/[Mm]emoryCaptures/

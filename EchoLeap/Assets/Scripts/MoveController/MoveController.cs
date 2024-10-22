@@ -9,7 +9,7 @@ public class MoveController : MonoBehaviour, IMoveController
     // ще не юзав те що знизу в імплентації
     [SerializeField] private float _jumpPower;
     [SerializeField] private float _jumpDefaultGravity;
-    [SerializeField] private float _jumpPowertGravity;
+    [SerializeField] private float _jumpPowerGravity;
     [SerializeField] private Vector2 passedPosition;
     [SerializeField] private bool permissionDoubleJump;
     [SerializeField] private bool readinessJump;
@@ -21,12 +21,15 @@ public class MoveController : MonoBehaviour, IMoveController
 
     public void Move(float axisVector)
     {
-        _rb.velocity =new Vector2(axisVector * _speed ,0);
+        var vector2 = _rb.velocity;
+        vector2.x = axisVector * _speed;
+        _rb.velocity = vector2 ;
     }
 
     public void Jump()
     {
-        UnityEngine.Debug.Log("I jumped");
+        _rb.AddForce(Vector2.up *_jumpPower, ForceMode2D.Impulse);
+        //UnityEngine.Debug.Log("I jumped");
     }
 
     private void SwitchGravity()

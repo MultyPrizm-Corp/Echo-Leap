@@ -50,18 +50,19 @@ public class MoveController : MonoBehaviour, IMoveController
     {
         if ( readinessDoubleJump && permissionDoubleJump)
         {
-            _iPlayerMove.Jump();
+            // _iPlayerMove.Jump();
             //
             readinessDoubleJump = false;
             //_rb.AddForce(Vector2.up * _jumpPower, ForceMode2D.Impulse);
             _rb.velocity = new Vector2(_rb.velocity.x, 3f);
+            //_rb.velocity.y = 3f ;
             // мб переробити джампПовер і зробити все на велосіті, мб переробити на JumpCount++
         }
 
 
         if (readinessJump)
         {
-            _iPlayerMove.Jump();
+            // _iPlayerMove.Jump();
             //
             readinessJump = false;
             _rb.AddForce(Vector2.up * _jumpPower, ForceMode2D.Impulse);
@@ -75,7 +76,7 @@ public class MoveController : MonoBehaviour, IMoveController
     {
         if (other.transform.CompareTag("Ground"))
         {
-            _iPlayerMove.JumpAnimOff();
+            // _iPlayerMove.JumpAnimOff();
             readinessJump = true;
             readinessDoubleJump = false;
         }

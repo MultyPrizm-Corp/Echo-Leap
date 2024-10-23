@@ -362,19 +362,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4737485878506752494, guid: ebf5eb83338c5cb42ad9e62869532c8f, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.9999619
+      value: 0.999962
       objectReference: {fileID: 0}
     - target: {fileID: 4737485878506752494, guid: ebf5eb83338c5cb42ad9e62869532c8f, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4737485878506752494, guid: ebf5eb83338c5cb42ad9e62869532c8f, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.008726557
+      value: 0.008726558
       objectReference: {fileID: 0}
     - target: {fileID: 4737485878506752494, guid: ebf5eb83338c5cb42ad9e62869532c8f, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4737485878506752494, guid: ebf5eb83338c5cb42ad9e62869532c8f, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -428,7 +428,7 @@ GameObject:
   - component: {fileID: 1054705963}
   m_Layer: 0
   m_Name: Old Ground
-  m_TagString: Untagged
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

@@ -6,7 +6,7 @@ public class MenuLoadCurtain : MonoBehaviour
 {
     [SerializeField] private Image curtain;
     [SerializeField] private int hideDelay;
-
+    
     public void SwichPanel(GameObject showPanel)
     {
         StartCoroutine(StartSwichPanel(showPanel));

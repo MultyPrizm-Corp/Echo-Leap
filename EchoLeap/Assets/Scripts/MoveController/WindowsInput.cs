@@ -6,12 +6,14 @@ using UnityEngine;
 public class WindowsInput : MonoBehaviour
 {
     private IMoveController moveInterface;
+    private PlayerAttackController playerAttackController;
     public bool isActive;
 
     private void Start()
     {
         // Знаходимо компонент MoveController
         moveInterface = GetComponent<IMoveController>();
+        playerAttackController = GetComponent<PlayerAttackController>();
     }
 
     private void MovementHandy()
@@ -38,9 +40,22 @@ public class WindowsInput : MonoBehaviour
         }
     }
 
+    private void AttackButtons()
+    {
+        if (Input.GetKeyDown(KeyCode.Mouse0) && playerAttackController != null)
+        {
+            playerAttackController.BasicAttack();
+        }
+        if (Input.GetKeyDown(KeyCode.Mouse1) && playerAttackController != null)
+        {
+            playerAttackController.HeavyAttack();
+        }
+    }
+
     private void Update()
     {
         MovementHandy();
         Jumping();
+        AttackButtons();
     }
 }

@@ -6,14 +6,15 @@ using UnityEngine.Serialization;
 
 public class MoveController : MonoBehaviour, IMoveController
 {
-    [SerializeField] private Rigidbody2D _rb;
+    [SerializeField] private Rigidbody2D rb;
 
     [SerializeField] private float _speed;
+    [SerializeField] private bool isActiveToMove = true;
 
     // 
     [SerializeField] private float _jumpPower;
-    [SerializeField] private float _jumpDefaultGravity;
-    [SerializeField] private float _jumpPowerGravity;
+    [SerializeField] private float jumpDefaultGravity;
+    [SerializeField] private float jumpPowerGravity;
     [SerializeField] private Vector2 passedPosition;
     [SerializeField] private bool permissionDoubleJump;
     [SerializeField] private bool readinessJump = true;
@@ -25,38 +26,36 @@ public class MoveController : MonoBehaviour, IMoveController
 
     // raycast check 
     [SerializeField] private float castDistance;
-    [SerializeField] private Vector2 boxSize;
-    [SerializeField] private bool rayTouchingGround;
 
     public void Move(float axisVector)
     {
-        var vector2 = _rb.velocity;
-        vector2.x = axisVector * _speed;
-        _rb.velocity = vector2;
+        if (isActiveToMove)
+        {
+            var vector2 = rb.velocity;
+            vector2.x = axisVector * _speed;
+            rb.velocity = vector2;
 
-        PlayerAnimationMove.Move(axisVector);
+            PlayerAnimationMove.Move(axisVector);
+        }
     }
 
     public void Jump()
     {
-        if (readinessDoubleJump && permissionDoubleJump)
+        if (isActiveToMove)
         {
-            Debug.Log("2st Jump");
-            readinessDoubleJump = false;
-            //_rb.AddForce(Vector2.up * _jumpPower, ForceMode2D.Impulse);
-            _rb.velocity = new Vector2(_rb.velocity.x, _jumpPower);
-            // мб переробити джампПовер і зробити все на велосіті, мб переробити на JumpCount++
-        }
+            if (readinessDoubleJump && permissionDoubleJump)
+            {
+                readinessDoubleJump = false;
+                rb.velocity = new Vector2(rb.velocity.x, _jumpPower);
+            }
 
 
-        if (readinessJump)
-        {
-            Debug.Log("1st Jump");
-            readinessJump = false;
-            _rb.velocity = new Vector2(_rb.velocity.x, _jumpPower);
-            //_rb.AddForce(Vector2.up * _jumpPower, ForceMode2D.Impulse);
-            // оскільки в повітрі
-            readinessDoubleJump = true;
+            if (readinessJump)
+            {
+                readinessJump = false;
+                rb.velocity = new Vector2(rb.velocity.x, _jumpPower);
+                readinessDoubleJump = true;
+            }
         }
     }
 
@@ -64,17 +63,22 @@ public class MoveController : MonoBehaviour, IMoveController
     {
         if (other.transform.CompareTag("Ground"))
         {
-            // _iPlayerMove.JumpAnimOff();
-            // readinessJump = true;
-            // readinessDoubleJump = false;
             CheckPlatform();
         }
-        
     }
 
     private void SwitchGravity()
     {
-        _rb.gravityScale = _rb.gravityScale * (-1f);
+        float directionY = (transform.position.y - passedPosition.y); // Визначаємо напрямок руху по осі Y
+
+        if (directionY > 0) // Рух вгору
+        {
+            rb.gravityScale = jumpDefaultGravity; // Встановлюємо гравітацію для підйому
+        }
+        else if (directionY < 0) // Рух вниз
+        {
+            rb.gravityScale = jumpPowerGravity; // Встановлюємо гравітацію для падіння
+        }
     }
 
     private void CheckPlatform()
@@ -89,23 +93,25 @@ public class MoveController : MonoBehaviour, IMoveController
                     Debug.Log("Platform in bottom Ground");
                     readinessJump = true;
                     readinessDoubleJump = false;
-                    rayTouchingGround = true;
                 }
-            }
-            else
-            {
-                Debug.Log("touching nothing");
-                rayTouchingGround = false;
             }
         }
     }
 
-    private void Update()
+    public void Lock(bool canMove)
     {
-        //CheckPlatform();
+        this.isActiveToMove = canMove;
     }
 
-    private void FixedUpdate()
+
+    private void Start()
     {
+        passedPosition = transform.position;
+    }
+
+    void Update()
+    {
+        SwitchGravity();
+        passedPosition = transform.position; // Оновлюємо минулу позицію
     }
 }

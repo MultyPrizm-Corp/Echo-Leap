@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class MoveController : MonoBehaviour, IMoveController
 {
@@ -9,7 +10,7 @@ public class MoveController : MonoBehaviour, IMoveController
 
     [SerializeField] private float _speed;
 
-    // ще не юзав те що знизу в імплентації
+    // 
     [SerializeField] private float _jumpPower;
     [SerializeField] private float _jumpDefaultGravity;
     [SerializeField] private float _jumpPowerGravity;
@@ -20,55 +21,42 @@ public class MoveController : MonoBehaviour, IMoveController
     [SerializeField] private bool readinessDoubleJump;
 
     // animator controller 
-    [SerializeField]private PlayerAnimationController _iPlayerMove;
+    [SerializeField] private PlayerAnimationController PlayerAnimationMove;
 
+    // raycast check 
+    [SerializeField] private float castDistance;
+    [SerializeField] private Vector2 boxSize;
+    [SerializeField] private bool rayTouchingGround;
 
     public void Move(float axisVector)
     {
         var vector2 = _rb.velocity;
         vector2.x = axisVector * _speed;
         _rb.velocity = vector2;
-        // rotation
-        // if (axisVector > 0)
-        // {
-        //     var rotation = transform.rotation;
-        //     rotation.y = 180f;
-        //     transform.rotation = rotation;
-        // }
-        //
-        // if (axisVector < 0)
-        // {
-        //     var rotation = transform.rotation;
-        //     rotation.y = 0f;
-        //     transform.rotation = rotation;
-        // }
-        
-        _iPlayerMove.Move(axisVector);
+
+        PlayerAnimationMove.Move(axisVector);
     }
 
     public void Jump()
     {
-        if ( readinessDoubleJump && permissionDoubleJump)
+        if (readinessDoubleJump && permissionDoubleJump)
         {
-            // _iPlayerMove.Jump();
-            //
+            Debug.Log("2st Jump");
             readinessDoubleJump = false;
             //_rb.AddForce(Vector2.up * _jumpPower, ForceMode2D.Impulse);
-            _rb.velocity = new Vector2(_rb.velocity.x, 3f);
-            //_rb.velocity.y = 3f ;
+            _rb.velocity = new Vector2(_rb.velocity.x, _jumpPower);
             // мб переробити джампПовер і зробити все на велосіті, мб переробити на JumpCount++
         }
 
 
         if (readinessJump)
         {
-            // _iPlayerMove.Jump();
-            //
+            Debug.Log("1st Jump");
             readinessJump = false;
-            _rb.AddForce(Vector2.up * _jumpPower, ForceMode2D.Impulse);
+            _rb.velocity = new Vector2(_rb.velocity.x, _jumpPower);
+            //_rb.AddForce(Vector2.up * _jumpPower, ForceMode2D.Impulse);
             // оскільки в повітрі
             readinessDoubleJump = true;
-            //UnityEngine.Debug.Log("I jumped");
         }
     }
 
@@ -77,13 +65,47 @@ public class MoveController : MonoBehaviour, IMoveController
         if (other.transform.CompareTag("Ground"))
         {
             // _iPlayerMove.JumpAnimOff();
-            readinessJump = true;
-            readinessDoubleJump = false;
+            // readinessJump = true;
+            // readinessDoubleJump = false;
+            CheckPlatform();
         }
+        
     }
 
     private void SwitchGravity()
     {
         _rb.gravityScale = _rb.gravityScale * (-1f);
+    }
+
+    private void CheckPlatform()
+    {
+        if (!readinessJump)
+        {
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, castDistance);
+            if (hit.collider != null)
+            {
+                if (hit.collider.CompareTag("Ground"))
+                {
+                    Debug.Log("Platform in bottom Ground");
+                    readinessJump = true;
+                    readinessDoubleJump = false;
+                    rayTouchingGround = true;
+                }
+            }
+            else
+            {
+                Debug.Log("touching nothing");
+                rayTouchingGround = false;
+            }
+        }
+    }
+
+    private void Update()
+    {
+        //CheckPlatform();
+    }
+
+    private void FixedUpdate()
+    {
     }
 }

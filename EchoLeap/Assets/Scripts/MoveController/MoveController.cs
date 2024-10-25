@@ -90,7 +90,6 @@ public class MoveController : MonoBehaviour, IMoveController
             {
                 if (hit.collider.CompareTag("Ground"))
                 {
-                    Debug.Log("Platform in bottom Ground");
                     readinessJump = true;
                     readinessDoubleJump = false;
                 }

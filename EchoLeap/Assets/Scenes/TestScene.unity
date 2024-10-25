@@ -659,19 +659,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c52af23362f4be74f94231feb50f0b4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rb: {fileID: 1298400056}
+  rb: {fileID: 1298400056}
   _speed: 1.8
+  isActiveToMove: 1
   _jumpPower: 3.5
-  _jumpDefaultGravity: 0
-  _jumpPowerGravity: 0
+  jumpDefaultGravity: 1
+  jumpPowerGravity: 1.4
   passedPosition: {x: 0, y: 0}
   permissionDoubleJump: 1
   readinessJump: 0
   readinessDoubleJump: 0
   PlayerAnimationMove: {fileID: 1298400060}
   castDistance: 0.000001
-  boxSize: {x: 0.08, y: 0.2}
-  rayTouchingGround: 0
 --- !u!114 &1298400055
 MonoBehaviour:
   m_ObjectHideFlags: 0

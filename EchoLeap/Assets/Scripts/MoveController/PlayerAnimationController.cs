@@ -5,7 +5,6 @@ using UnityEngine;
 public class PlayerAnimationController : MonoBehaviour, IMoveController
 {
     private static readonly int RunState = Animator.StringToHash("RunState");
-    private static readonly int IsJumped = Animator.StringToHash("isJumped");
     [SerializeField] private Animator _animator;
     public void Move(float axisVector)
     {
@@ -34,12 +33,5 @@ public class PlayerAnimationController : MonoBehaviour, IMoveController
 
     public void Jump()
     {
-        _animator.SetBool(IsJumped, true);
-        // throw new System.NotImplementedException();
-    }
-
-    public void JumpAnimOff()
-    {
-        _animator.SetBool(IsJumped, false);
     }
 }

@@ -23,8 +23,7 @@ public class WindowsInput : MonoBehaviour
         {
             horizontal = -1f;
         }
-
-        if (Input.GetKey(KeyCode.D))
+        else if (Input.GetKey(KeyCode.D))
         {
             horizontal = 1f;
         }

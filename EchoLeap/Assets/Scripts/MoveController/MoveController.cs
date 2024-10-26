@@ -2,17 +2,19 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class MoveController : MonoBehaviour, IMoveController
 {
-    [SerializeField] private Rigidbody2D _rb;
+    [SerializeField] private Rigidbody2D rb;
 
     [SerializeField] private float _speed;
+    [SerializeField] private bool isActiveToMove = true;
 
-    // ще не юзав те що знизу в імплентації
+    // 
     [SerializeField] private float _jumpPower;
-    [SerializeField] private float _jumpDefaultGravity;
-    [SerializeField] private float _jumpPowerGravity;
+    [SerializeField] private float jumpDefaultGravity;
+    [SerializeField] private float jumpPowerGravity;
     [SerializeField] private Vector2 passedPosition;
     [SerializeField] private bool permissionDoubleJump;
     [SerializeField] private bool readinessJump = true;
@@ -20,54 +22,40 @@ public class MoveController : MonoBehaviour, IMoveController
     [SerializeField] private bool readinessDoubleJump;
 
     // animator controller 
-    [SerializeField]private PlayerAnimationController _iPlayerMove;
+    [SerializeField] private PlayerAnimationController PlayerAnimationMove;
 
+    // raycast check 
+    [SerializeField] private float castDistance;
 
     public void Move(float axisVector)
     {
-        var vector2 = _rb.velocity;
-        vector2.x = axisVector * _speed;
-        _rb.velocity = vector2;
-        // rotation
-        // if (axisVector > 0)
-        // {
-        //     var rotation = transform.rotation;
-        //     rotation.y = 180f;
-        //     transform.rotation = rotation;
-        // }
-        //
-        // if (axisVector < 0)
-        // {
-        //     var rotation = transform.rotation;
-        //     rotation.y = 0f;
-        //     transform.rotation = rotation;
-        // }
-        
-        _iPlayerMove.Move(axisVector);
+        if (isActiveToMove)
+        {
+            var vector2 = rb.velocity;
+            vector2.x = axisVector * _speed;
+            rb.velocity = vector2;
+
+            PlayerAnimationMove.Move(axisVector);
+        }
     }
 
     public void Jump()
     {
-        if ( readinessDoubleJump && permissionDoubleJump)
+        if (isActiveToMove)
         {
-            _iPlayerMove.Jump();
-            //
-            readinessDoubleJump = false;
-            //_rb.AddForce(Vector2.up * _jumpPower, ForceMode2D.Impulse);
-            _rb.velocity = new Vector2(_rb.velocity.x, 3f);
-            // мб переробити джампПовер і зробити все на велосіті, мб переробити на JumpCount++
-        }
+            if (readinessDoubleJump && permissionDoubleJump)
+            {
+                readinessDoubleJump = false;
+                rb.velocity = new Vector2(rb.velocity.x, _jumpPower);
+            }
 
 
-        if (readinessJump)
-        {
-            _iPlayerMove.Jump();
-            //
-            readinessJump = false;
-            _rb.AddForce(Vector2.up * _jumpPower, ForceMode2D.Impulse);
-            // оскільки в повітрі
-            readinessDoubleJump = true;
-            //UnityEngine.Debug.Log("I jumped");
+            if (readinessJump)
+            {
+                readinessJump = false;
+                rb.velocity = new Vector2(rb.velocity.x, _jumpPower);
+                readinessDoubleJump = true;
+            }
         }
     }
 
@@ -75,14 +63,54 @@ public class MoveController : MonoBehaviour, IMoveController
     {
         if (other.transform.CompareTag("Ground"))
         {
-            _iPlayerMove.JumpAnimOff();
-            readinessJump = true;
-            readinessDoubleJump = false;
+            CheckPlatform();
         }
     }
 
     private void SwitchGravity()
     {
-        _rb.gravityScale = _rb.gravityScale * (-1f);
+        float directionY = (transform.position.y - passedPosition.y); // Визначаємо напрямок руху по осі Y
+
+        if (directionY > 0) // Рух вгору
+        {
+            rb.gravityScale = jumpDefaultGravity; // Встановлюємо гравітацію для підйому
+        }
+        else if (directionY < 0) // Рух вниз
+        {
+            rb.gravityScale = jumpPowerGravity; // Встановлюємо гравітацію для падіння
+        }
+    }
+
+    private void CheckPlatform()
+    {
+        if (!readinessJump)
+        {
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, castDistance);
+            if (hit.collider != null)
+            {
+                if (hit.collider.CompareTag("Ground"))
+                {
+                    readinessJump = true;
+                    readinessDoubleJump = false;
+                }
+            }
+        }
+    }
+
+    public void Lock(bool canMove)
+    {
+        this.isActiveToMove = canMove;
+    }
+
+
+    private void Start()
+    {
+        passedPosition = transform.position;
+    }
+
+    void Update()
+    {
+        SwitchGravity();
+        passedPosition = transform.position; // Оновлюємо минулу позицію
     }
 }

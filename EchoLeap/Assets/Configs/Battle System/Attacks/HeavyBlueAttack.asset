@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: HeavyBlueAttack
   m_EditorClassIdentifier: 
   animatorName: basic_blue_slash
+  attackDelay: 0.8
   attackRadius: 2
   animationAttackName: Wide
   animationPlayerName: Heavy_Attack1

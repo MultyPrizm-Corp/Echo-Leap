@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: BasicBlueAttack
   m_EditorClassIdentifier: 
   animatorName: basic_blue_slash
+  attackDelay: 0.4
   attackRadius: 2
   animationAttackName: Thin
   animationPlayerName: Basic_Attack

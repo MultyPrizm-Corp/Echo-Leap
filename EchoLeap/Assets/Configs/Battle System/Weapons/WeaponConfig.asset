@@ -15,9 +15,14 @@ MonoBehaviour:
   weaponName: basic_sword
   sprite: {fileID: 21300000, guid: 93ac18c159406bf4c8676972b8a13251, type: 3}
   basicAttack: {fileID: 11400000, guid: 49e0afcdbc9f12f4dbb37487e1daee9b, type: 2}
-  heavyAttack: {fileID: 11400000, guid: 06c248f22ed6f294497f42e6689483d3, type: 2}
-  skillAttack: {fileID: 0}
   basicDamage: 1
+  basicAttackStaminaCost: 5
+  heavyAttack: {fileID: 11400000, guid: 06c248f22ed6f294497f42e6689483d3, type: 2}
   heavyDamage: 2
+  heavyAttackStaminaCost: 10
+  skillAttack: {fileID: 0}
   skillDamage: 1
+  skillAttackStaminaCost: 25
+  comboList:
+  - {fileID: 11400000, guid: 7d59b6bf698189a4da376eacb6132e81, type: 2}
   element: wind

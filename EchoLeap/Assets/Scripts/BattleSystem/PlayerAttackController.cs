@@ -4,10 +4,11 @@ using UnityEngine;
 
 public interface IComboAttack
 {
-    public ComboState Activate(Animator playerAnimator, GameObject player, Dictionary<string, Animator> animatorPull, List<string> combo);
+    public (ComboState, bool, float) ActivateCombo(List<string> combo, AttackControlPackage package);
 
-    public ComboState ContinueAttack(ComboState state);
+    public (ComboState, bool) ContinueCombo(ComboState state, HitControlPackage package);
 }
+
 
 public interface IAttack
 {
@@ -20,9 +21,13 @@ public interface IAttack
 
 public abstract class IWeapon : ScriptableObject
 {
-    public abstract void Attack(AttackControlPackage package);
+    public abstract (int, float) Attack(AttackControlPackage package, int stamina);
 
     public abstract void Hit(HitControlPackage package);
+
+    public abstract (ComboState, bool, float) ActivateCombo(List<string> combo, AttackControlPackage package);
+
+    public abstract (ComboState, bool) ContinueCombo(ComboState state, HitControlPackage package);
 
     public abstract string GetName();
 }
@@ -44,6 +49,7 @@ public struct HitControlPackage
 {
     public string type;
     public GameObject player;
+    public Animator playerAnimator;
     public GameObject attackPoint;
     public Dictionary<string, GameObject> specialObjects;
     public AudioSource audioSource;
@@ -52,10 +58,6 @@ public struct HitControlPackage
     public string playerSide;
 }
 
-public struct ComboState
-{
-    public int attackPhase;
-}
 
 public class PlayerAttackController : MonoBehaviour
 {
@@ -66,32 +68,53 @@ public class PlayerAttackController : MonoBehaviour
     [SerializeField] private List<WrapperAttackAnimator> effectAnimatorsPull = new List<WrapperAttackAnimator>();
     
     [Header("Battle Config")]
-    [SerializeField, Space(5)] private List<IWeapon> weapons = new List<IWeapon>();
+    [SerializeField] private List<IWeapon> weapons = new List<IWeapon>();
     [SerializeField] private string weaponEquip;
+    [SerializeField] private int comboBuffer;
+    [SerializeField, Tooltip("Time range: value -- value*2")] private float comboResetTime;
+    [SerializeField] private int maxStamina;
+    [SerializeField] private int regenStaminaOfSeconds;
 
     [Header("Special")]
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private GameObject attackPoint;
+    [SerializeField] private StaminaSliderUI staminaSlider;
+    [SerializeField] private ComboView comboView;
     [SerializeField, Tooltip("Defalt: y=0 -> left; y=180 -> rigth")] private bool invertLeftAndRigth = false;
     [SerializeField] private List<GameObject> specialObjects = new List<GameObject>();
     [SerializeField] private bool debag;
 
     [Header("Permissions")]
-    [SerializeField, Space(5)] private bool rigthAttack = true;
-    [SerializeField] private bool leftAttack = true;
+    [SerializeField] private bool basicAttack = true;
+    [SerializeField] private bool heavyAttack = true;
     [SerializeField] private bool skillAttack = true;
     [SerializeField] private bool dash = true;
+
+    [Header("Debag")]
+    [SerializeField] private int stamina;
+    [SerializeField] private List<string> combo = new List<string>();
 
     private Dictionary<string, Animator> animatorPullList;
     private Dictionary<string, IWeapon> weaponsList;
     private Dictionary<string, GameObject> specialObjectsList;
-    private List<string> combo;
+    private bool readinessAttack = true;
+    private ComboState comboState;
+    private bool comboReset;
 
     private void Start()
     {
         animatorPullList = CompileAnimatorPullList(effectAnimatorsPull);
         weaponsList = CompileWeaponsList(weapons);
         specialObjectsList = CompileSpecialObjectsList(specialObjects);
+        stamina = maxStamina;
+
+        StartCoroutine(RegenStamina());
+        StartCoroutine(ComboReseter());
+
+        if (staminaSlider != null)
+        {
+            staminaSlider.SetMaxStamina(maxStamina);
+        }
 
 #if DEBUG
         if(playerAnimator == null)
@@ -107,6 +130,19 @@ public class PlayerAttackController : MonoBehaviour
             Debug.LogWarning("PlayerAttackController[Warning]: Attack point don`t found");
         }
 #endif
+    }
+
+    private void Update()
+    {
+        if (staminaSlider != null)
+        {
+            staminaSlider.SetStamina(stamina);
+        }
+
+        if (comboView != null)
+        {
+            comboView.ViewCombo(combo);
+        }
     }
 
 #if DEBUG
@@ -156,6 +192,48 @@ public class PlayerAttackController : MonoBehaviour
         return animators;
     }
 
+    private IEnumerator RegenStamina()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(1f);
+
+            if(stamina + regenStaminaOfSeconds > maxStamina)
+            {
+                stamina = maxStamina;
+            }
+            else
+            {
+                stamina += regenStaminaOfSeconds;
+            }        
+        }
+    }
+
+    private IEnumerator ComboReseter()
+    {
+        while (true)
+        {
+            if (comboReset)
+            {
+                combo.Clear();
+                comboReset = false;
+            }
+            else
+            {
+                comboReset = true;
+            }
+
+            yield return new WaitForSeconds(comboResetTime);
+        }
+    }
+
+    private IEnumerator AttackDelay(float sec)
+    {
+        readinessAttack = false;
+        yield return new WaitForSeconds(sec);
+        readinessAttack = true;
+    }
+
     private string CheckPlayerSide()
     {
         if (player.transform.rotation.y == 0 || player.transform.rotation.y == 1 && invertLeftAndRigth)
@@ -195,6 +273,7 @@ public class PlayerAttackController : MonoBehaviour
         package.type = type;
         package.specialObjects = specialObjectsList;
         package.player = player;
+        package.playerAnimator = playerAnimator;
         package.attackPoint = attackPoint;
         package.playerSide = CheckPlayerSide();
         package.audioSource = audioSource;
@@ -202,33 +281,95 @@ public class PlayerAttackController : MonoBehaviour
         return package;
     }
 
+    private void StartAttack(string type)
+    {
+        (ComboState, bool, float) comboStatus;
+
+        comboStatus = weaponsList[weaponEquip].ActivateCombo(combo, GetAttackControlPackage(type));
+
+        if (comboStatus.Item2 && readinessAttack)
+        {
+            comboState = comboStatus.Item1;
+            StartCoroutine(AttackDelay(comboStatus.Item3));
+            combo.Clear();
+        }
+        else if (readinessAttack)
+        {
+            (int, float) status;
+            status = weaponsList[weaponEquip].Attack(GetAttackControlPackage(type), stamina);
+
+            if (status.Item1 > 0)
+            {
+                stamina -= status.Item1;
+            }
+            else if (staminaSlider != null)
+            {
+                staminaSlider.LowStaminaAlarm();
+            }
+
+            StartCoroutine(AttackDelay(status.Item2));
+
+            comboReset = false;
+            combo.Add(type);
+        }
+
+        if (combo.Count > comboBuffer)
+        {
+            combo.Clear();
+        }
+    }
+
+    private void StartHit(string type)
+    {
+        if (comboState != null)
+        {
+            (ComboState, bool) comboStatus;
+
+            comboStatus = weaponsList[weaponEquip].ContinueCombo(comboState, GetHitControlPackage(type));
+
+            if (comboStatus.Item2)
+            {
+                comboState = comboStatus.Item1;
+            }
+            else
+            {
+                comboState = null;
+                combo.Clear();
+            }       
+        }
+        else
+        {
+            weaponsList[weaponEquip].Hit(GetHitControlPackage(type));
+        }
+    }
+
     public void BasicAttack()
     {
-        weaponsList[weaponEquip].Attack(GetAttackControlPackage("right"));
+        StartAttack("basic");
     }
 
     public void HeavyAttack()
     {
-        weaponsList[weaponEquip].Attack(GetAttackControlPackage("left"));
+        StartAttack("heavy");
     }
 
     public void SkillAttack()
     {
-        weaponsList[weaponEquip].Attack(GetAttackControlPackage("skill"));
+        StartAttack("skill");
     }
 
     public void HitBasicAttack()
     {
-        weaponsList[weaponEquip].Hit(GetHitControlPackage("right"));
+        StartHit("basic");
     }
 
     public void HitHeavyAttack()
     {
-        weaponsList[weaponEquip].Hit(GetHitControlPackage("left"));
+        StartHit("heavy");
     }
 
     public void HitSkillAttack()
     {
-        weaponsList[weaponEquip].Hit(GetHitControlPackage("skill"));
+        StartHit("skill");
     }
 }

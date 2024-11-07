@@ -27,6 +27,11 @@ public class MoveController : MonoBehaviour, IMoveController
     // raycast check 
     [SerializeField] private float castDistance;
 
+    private void OnDrawGizmos()
+    {
+        Debug.DrawLine(transform.position, transform.position + Vector3.down * castDistance, Color.cyan);
+    }
+
     public void Move(float axisVector)
     {
         if (isActiveToMove)
@@ -61,10 +66,7 @@ public class MoveController : MonoBehaviour, IMoveController
 
     private void OnCollisionEnter2D(Collision2D other)
     {
-        if (other.transform.CompareTag("Ground"))
-        {
-            CheckPlatform();
-        }
+        CheckPlatform();
     }
 
     private void SwitchGravity()
@@ -85,14 +87,11 @@ public class MoveController : MonoBehaviour, IMoveController
     {
         if (!readinessJump)
         {
-            RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, castDistance);
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, castDistance, ~LayerMask.GetMask("Player"));
             if (hit.collider != null)
             {
-                if (hit.collider.CompareTag("Ground"))
-                {
-                    readinessJump = true;
-                    readinessDoubleJump = false;
-                }
+                readinessJump = true;
+                readinessDoubleJump = false;
             }
         }
     }

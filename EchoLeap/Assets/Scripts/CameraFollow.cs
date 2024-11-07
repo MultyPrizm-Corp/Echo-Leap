@@ -20,20 +20,20 @@ public class CameraFollow : MonoBehaviour
     {
         Vector3 targetPosition = player.position + offset;
 
-        if(targetPosition.x < XRigthLimitationPosition)
+        if(targetPosition.x < XRigthLimitationPosition && XRigthLimitationPosition != 0)
         {
             targetPosition.x = XRigthLimitationPosition;
         }
-        else if (targetPosition.x > XLeftLimitationPosition)
+        else if (targetPosition.x > XLeftLimitationPosition && XLeftLimitationPosition != 0)
         {
             targetPosition.x = XLeftLimitationPosition;
         }
 
-        if (targetPosition.y > YUpLimitationPosition)
+        if (targetPosition.y > YUpLimitationPosition && YUpLimitationPosition != 0)
         {
             targetPosition.y = YUpLimitationPosition;
         }
-        else if (targetPosition.y < YDownLimitationPosition)
+        else if (targetPosition.y < YDownLimitationPosition && YDownLimitationPosition != 0)
         {
             targetPosition.y = YDownLimitationPosition;
         }

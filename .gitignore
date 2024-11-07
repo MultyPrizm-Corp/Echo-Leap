@@ -9,6 +9,7 @@ EchoLeap/[Bb]uild/
 EchoLeap/[Bb]uilds/
 EchoLeap/[Ll]ogs/
 EchoLeap/[Uu]ser[Ss]ettings/
+EchoLeap/[Dd]ata
 
 EchoLeap/Assets/Scripts/Temp/*
 !/EchoLeap/Assets/Scripts/Temp/

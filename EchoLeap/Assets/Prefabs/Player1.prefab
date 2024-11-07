@@ -2979,16 +2979,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c52af23362f4be74f94231feb50f0b4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rb: {fileID: 5696366750657489291}
+  rb: {fileID: 5696366750657489291}
   _speed: 5
-  _jumpPower: 2.65
-  _jumpDefaultGravity: 0
-  _jumpPowerGravity: 0
+  isActiveToMove: 1
+  _jumpPower: 8
+  jumpDefaultGravity: 10
+  jumpPowerGravity: 15
   passedPosition: {x: 0, y: 0}
   permissionDoubleJump: 0
   readinessJump: 1
   readinessDoubleJump: 0
-  _iPlayerMove: {fileID: 5357020164782661428}
+  PlayerAnimationMove: {fileID: 5357020164782661428}
+  castDistance: 0
 --- !u!114 &7429892701385443684
 MonoBehaviour:
   m_ObjectHideFlags: 0
